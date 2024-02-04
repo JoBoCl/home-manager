@@ -31,6 +31,7 @@ let
   configFilePath = "${userDir}/settings.json";
   tasksFilePath = "${userDir}/tasks.json";
   keybindingsFilePath = "${userDir}/keybindings.json";
+  argvFilePath = "${userDir}/argv.json";
 
   snippetDir = "${userDir}/snippets";
 
@@ -100,6 +101,19 @@ in {
         description = ''
           Configuration written to Visual Studio Code's
           {file}`settings.json`.
+        '';
+      };
+
+      runtimeSettings = mkOption {
+        type = jsonFormat.type;
+        default = { };
+        example = literalExpression ''
+          {
+            "password-store" = "gnome";
+          }
+        '';
+        description = ''
+            Configuration of permanent command line arguments.
         '';
       };
 
@@ -228,6 +242,10 @@ in {
         "${configFilePath}".source =
           jsonFormat.generate "vscode-user-settings" mergedUserSettings;
       })
+      (mkIf (runtimeSettings != { }) {
+        "${argvFilePath}".source =
+          jsonFormat.generate "vscode-runtime-settings" runtimeSettings;
+      }
       (mkIf (cfg.userTasks != { }) {
         "${tasksFilePath}".source =
           jsonFormat.generate "vscode-user-tasks" cfg.userTasks;
